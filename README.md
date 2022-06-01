@@ -1,4 +1,5 @@
 # Requirements (libs)
-  - dotenv
-  - boto3
-  - discord
+
+- python-dotenv
+- boto3
+- discord
