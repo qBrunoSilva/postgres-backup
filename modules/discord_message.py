@@ -1,15 +1,11 @@
-
 from discord import Webhook, RequestsWebhookAdapter, Embed
-
-import os
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
-
 URL = os.getenv('WEBHOOK_URL')
 TOKEN = os.getenv('DISCORD_TOKEN')
-
 
 class DiscordBot():
     def __init__(self) -> None:

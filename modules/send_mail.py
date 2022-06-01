@@ -1,18 +1,13 @@
-
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formataddr
-
-import smtplib
-
-import os
 from dotenv import load_dotenv
+import smtplib
+import os
 
 load_dotenv()
-
-
+ 
 class SendMail():
     def __init__(self) -> None:
         self.email_name = os.environ.get("EMAIL_NAME")
