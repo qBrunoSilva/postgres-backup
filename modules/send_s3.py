@@ -1,12 +1,14 @@
-import boto3
 import os
+
+import boto3
 from dotenv import load_dotenv
 
 load_dotenv()
 
 FOLDER_NAME = os.environ.get("AWS_FOLDER_NAME")
 BACKUP_DIR = os.environ.get("BACKUP_DIR")
- 
+
+
 class SendS3():
     def __init__(self) -> None:
         self.bucket_name = os.environ.get("AWS_BUCKET_NAME")
@@ -30,5 +32,3 @@ class SendS3():
             return True
         else:
             return False
-
-

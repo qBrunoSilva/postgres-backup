@@ -1,12 +1,13 @@
-import subprocess
 import os
 import shutil
+import subprocess
 from datetime import datetime
+
 from dotenv import load_dotenv
 
+from modules.discord_message import DiscordBot
 from modules.send_mail import SendMail
 from modules.send_s3 import SendS3
-from modules.discord_message import DiscordBot
 
 load_dotenv()
 
@@ -44,9 +45,12 @@ class BackupDB():
         if not os.path.exists(dir):
             os.makedirs(dir)
 
-    def remove_folder(self, dir):
+    def remove_folder_and_zip_file(self, dir):
         if os.path.exists(dir):
             shutil.rmtree(dir)
+
+        if os.path.isfile(f'{dir}.zip'):
+            os.remove(f'{dir}.zip')
 
     def save_log(self, log_text, message_type: str):
         self.send_discord_message(log_text, message_type)
@@ -56,6 +60,13 @@ class BackupDB():
 
         with open(f'./logs/logs.txt', 'a') as f:
             f.writelines(f'{time.strftime("%d/%m/%Y")} - {log_text}\n')
+
+    def create_zip_file(self, dir):
+        print(f'Creating zip file {dir}.zip')
+        shutil.make_archive(f'{dir}', 'zip', dir)
+        print(f'Zip file {dir}.zip created')
+
+        return f'{dir}.zip'
 
     def create_backup(self):
         self.verify_and_crate_folder(self.database_backup_dir)
@@ -72,8 +83,11 @@ class BackupDB():
         result = subprocess.call(command, shell=True)
 
         if result == 0:
+            self.create_zip_file(f"{self.database_backup_dir}/{folder_name}")
             s3 = SendS3()
-            upload_success = s3.upload_file(f'{folder_name}/{self.file_name}')
+
+            upload_success = s3.upload_file(
+                f'{folder_name}.zip')
 
             if not upload_success:
                 self.send_email_notify(
@@ -89,7 +103,7 @@ class BackupDB():
             self.save_log(
                 f'[OK] Backing up database {self.database_name} finished at {datetime.now().strftime("%d/%m/%Y - %H:%M:%S")}', "success")
 
-            return self.remove_folder(f'{self.database_backup_dir}/{folder_name}')
+            return self.remove_folder_and_zip_file(f'{self.database_backup_dir}/{folder_name}')
         else:
             self.send_email_notify(subject="Backup database error",
                                    body=f"""
